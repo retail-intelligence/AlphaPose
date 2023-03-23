@@ -25,12 +25,11 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-cfg = update_config(args.cfg)
 
 if __name__ == "__main__":
 
     pose_model = Pose(
-        cfg, args.checkpoint, args.posebatch, args.min_box_area, args.device
+        args.cfg, args.checkpoint, args.posebatch, args.min_box_area, args.device
     )
 
     boxes, scores = [], []

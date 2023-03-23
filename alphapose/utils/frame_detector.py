@@ -5,18 +5,18 @@ from alphapose.models import builder
 from alphapose.utils.pPose_nms import pose_nms
 from alphapose.utils.presets import SimpleTransform, SimpleTransform3DSMPL
 from alphapose.utils.transforms import get_func_heatmap_to_coord
-
+from alphapose.utils.config import update_config
 
 class DetectionLoader():
     def __init__(self, cfg, device):
         self.cfg = cfg
         self.device = device
-        self._input_size = cfg.DATA_PRESET.IMAGE_SIZE
-        self._output_size = cfg.DATA_PRESET.HEATMAP_SIZE
+        self._input_size = self.cfg.DATA_PRESET.IMAGE_SIZE
+        self._output_size = self.cfg.DATA_PRESET.HEATMAP_SIZE
 
-        self._sigma = cfg.DATA_PRESET.SIGMA
+        self._sigma = self.cfg.DATA_PRESET.SIGMA
 
-        if cfg.DATA_PRESET.TYPE == 'simple':
+        if self.cfg.DATA_PRESET.TYPE == 'simple':
             pose_dataset = builder.retrieve_dataset(self.cfg.DATASET.TRAIN)
             self.transformation = SimpleTransform(
                 pose_dataset, scale_factor=0,
@@ -24,7 +24,7 @@ class DetectionLoader():
                 output_size=self._output_size,
                 rot=0, sigma=self._sigma,
                 train=False, add_dpg=False, gpu_device=self.device)
-        elif cfg.DATA_PRESET.TYPE == 'simple_smpl':
+        elif self.cfg.DATA_PRESET.TYPE == 'simple_smpl':
             # TODO: new features
             from easydict import EasyDict as edict
             dummpy_set = edict({
@@ -34,16 +34,16 @@ class DetectionLoader():
                 'bbox_3d_shape': (2.2, 2.2, 2.2)
             })
             self.transformation = SimpleTransform3DSMPL(
-                dummpy_set, scale_factor=cfg.DATASET.SCALE_FACTOR,
-                color_factor=cfg.DATASET.COLOR_FACTOR,
-                occlusion=cfg.DATASET.OCCLUSION,
-                input_size=cfg.MODEL.IMAGE_SIZE,
-                output_size=cfg.MODEL.HEATMAP_SIZE,
-                depth_dim=cfg.MODEL.EXTRA.DEPTH_DIM,
+                dummpy_set, scale_factor=self.cfg.DATASET.SCALE_FACTOR,
+                color_factor=self.cfg.DATASET.COLOR_FACTOR,
+                occlusion=self.cfg.DATASET.OCCLUSION,
+                input_size=self.cfg.MODEL.IMAGE_SIZE,
+                output_size=self.cfg.MODEL.HEATMAP_SIZE,
+                depth_dim=self.cfg.MODEL.EXTRA.DEPTH_DIM,
                 bbox_3d_shape=(2.2, 2.2, 2.2),
-                rot=cfg.DATASET.ROT_FACTOR, sigma=cfg.MODEL.EXTRA.SIGMA,
+                rot=self.cfg.DATASET.ROT_FACTOR, sigma=self.cfg.MODEL.EXTRA.SIGMA,
                 train=False, add_dpg=False,
-                loss_type=cfg.LOSS['TYPE'])
+                loss_type=self.cfg.LOSS['TYPE'])
 
 
     def image_postprocess(self, img, boxes):
@@ -121,7 +121,8 @@ class JointFinder:
         return result
 
 class Pose:
-    def __init__(self, cfg, checkpoint, batch_size, min_box_area, device):
+    def __init__(self, cfg_file, checkpoint, batch_size, min_box_area, device):
+        cfg = update_config(cfg_file)
         self.device = device
         self.batch_size = batch_size
         self.min_box_area = min_box_area
@@ -156,7 +157,7 @@ class Pose:
             hm = torch.cat(hm)
 
         hm = hm.cpu()
-        result = self.joints.hm_to_joints(boxes, scores, [], hm, cropped_boxes)
+        result = self.joints.hm_to_joints(boxes, scores, torch.zeros(len(boxes)), hm, cropped_boxes)
 
         return result
 
