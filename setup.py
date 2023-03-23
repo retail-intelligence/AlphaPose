@@ -3,6 +3,22 @@ import platform
 import subprocess
 import time
 
+print(' ====== Begin Setup =======')
+
+cmd = 'python -m pip install numpy==1.21.2'
+os.system(cmd)
+cmd = 'python -m pip install Cython==0.29.33'
+os.system(cmd)
+cmd = 'python -m pip install torch==1.12.1'
+os.system(cmd)
+
+cmd = 'pip install cython pycocotools'
+os.system(cmd)
+cmd = 'pip install git+https://github.com/yanfengliu/cython_bbox.git'
+os.system(cmd)
+
+print(' ====== End Setup =======')
+
 import numpy as np
 from Cython.Build import cythonize
 from setuptools import Extension, find_packages, setup
@@ -165,7 +181,8 @@ def get_install_requires():
         'tqdm', 'tensorboardx', 'easydict',
         'pyyaml', 'halpecocotools',
         'torch>=1.1.0', 'torchvision>=0.3.0',
-        'munkres', 'timm==0.1.20', 'natsort'
+        'munkres', 'timm==0.1.20', 'natsort',
+        'numpy', 'Cython'
     ]
     # official pycocotools doesn't support Windows, we will install it by third-party git repository later
     if platform.system() != 'Windows':
