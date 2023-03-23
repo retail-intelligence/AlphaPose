@@ -65,6 +65,7 @@ class JointFinder:
         self.min_box_area = min_box_area
 
         self.use_heatmap_loss = (self.cfg.DATA_PRESET.get('LOSS_TYPE', 'MSELoss') == 'MSELoss')
+        self.labels = halpe_136_fullbody_points()
 
     def hm_to_joints(self, boxes, scores, ids, hm_data, cropped_boxes):
         norm_type = self.cfg.LOSS.get('NORM_TYPE', None)
@@ -119,6 +120,10 @@ class JointFinder:
             )
 
         return result
+    
+    def keypoint_label(self, index: int) -> str:
+        return self.labels[index]
+    
 
 class Pose:
     def __init__(self, cfg_file, checkpoint, batch_size, min_box_area, device):
@@ -133,7 +138,6 @@ class Pose:
         self.pose_model.load_state_dict(torch.load(checkpoint, map_location=self.device))
         self.pose_model.to(self.device)
         self.pose_model.eval()
-
 
         self.det_loader = DetectionLoader(cfg, device)
         self.joints = JointFinder(cfg, min_box_area)
@@ -160,5 +164,45 @@ class Pose:
         result = self.joints.hm_to_joints(boxes, scores, torch.zeros(len(boxes)), hm, cropped_boxes)
 
         return result
+
+    def keypoint_label(self, index: int) -> str:
+        return self.joints.keypoint_label(index)
+
+def halpe_136_fullbody_points() -> list[str]:
+    # 26 body keypoints
+    body = ["Nose",
+        "LEye",
+        "REye",
+        "LEar",
+        "REar",
+        "LShoulder",
+        "RShoulder",
+        "LElbow",
+        "RElbow",
+        "LWrist",
+        "RWrist",
+        "LHip",
+        "RHip",
+        "LKnee",
+        "Rknee",
+        "LAnkle",
+        "RAnkle",
+        "Head",
+        "Neck",
+        "Hip",
+        "LBigToe",
+        "RBigToe",
+        "LSmallToe",
+        "RSmallToe",
+        "LHeel",
+        "RHeel"]
+    # face {26-93, 68 Face Keypoints}
+    face = [f"face_{i}" for i in range(26,94)]
+    # left hand {94-114, 21 Left Hand Keypoints}
+    LHand = [f"LHand_{i}" for i in range(94,115)]
+    # right hand {115-135, 21 Right Hand Keypoints}
+    RHand = [f"RHand_{i}" for i in range(115,136)]
+
+    return body + face + LHand + RHand
 
     
