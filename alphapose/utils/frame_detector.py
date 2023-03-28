@@ -104,8 +104,8 @@ class JointFinder:
             pose_scores.append(torch.from_numpy(pose_score).unsqueeze(0))
         preds_img = torch.cat(pose_coords)
         preds_scores = torch.cat(pose_scores)
-        boxes, scores, ids, preds_img, preds_scores, pick_ids = \
-            pose_nms(boxes, scores, ids, preds_img, preds_scores, self.min_box_area, use_heatmap_loss=self.use_heatmap_loss)
+        # boxes, scores, ids, preds_img, preds_scores, pick_ids = \
+        #     pose_nms(boxes, scores, ids, preds_img, preds_scores, self.min_box_area, use_heatmap_loss=self.use_heatmap_loss)
 
         result = []
         for k in range(len(scores)):
@@ -184,7 +184,7 @@ def halpe_136_fullbody_points() -> list[str]:
         "LHip",
         "RHip",
         "LKnee",
-        "Rknee",
+        "RKnee",
         "LAnkle",
         "RAnkle",
         "Head",
